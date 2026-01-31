@@ -18,21 +18,18 @@ pipeline {
     }
 
     stage('Fetch AWS creds from Vault') {
-  steps {
-    withVault(
-      vaultCredentialId: 'vault-approle-role-id',   // <<< specify Vault credentials here
-      vaultSecrets: [[
-        path: 'aws/creds/eksvaultrole',
-        secretValues: [
-          [envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key'],
-          [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_key'],
-          [envVar: 'AWS_SESSION_TOKEN', vaultKey: 'security_token']
-        ]
-      ]]
-    ) {
-      sh 'aws sts get-caller-identity'
-    }
-  }
+      steps {
+          withVault([vaultSecrets: [[
+              path: 'aws/creds/eksvaultrole',
+              secretValues: [
+                  [envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key'],
+                  [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_key'],
+                  [envVar: 'AWS_SESSION_TOKEN', vaultKey: 'security_token']
+              ]
+          ]]]) {
+              sh 'aws sts get-caller-identity'
+          }
+      }
 }
 
 
