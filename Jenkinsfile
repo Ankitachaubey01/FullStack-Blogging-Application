@@ -20,7 +20,7 @@ pipeline {
     stage('Fetch AWS creds from Vault') {
   steps {
     withVault(
-      vaultCredentialId: 'jenkins-vault-approle',   // <<< specify Vault credentials here
+      vaultCredentialId: 'vault-approle-role-id',   // <<< specify Vault credentials here
       vaultSecrets: [[
         path: 'aws/creds/eksvaultrole',
         secretValues: [
