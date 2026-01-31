@@ -9,7 +9,7 @@ pipeline {
 
     stage('Checkout') {
       steps {
-        git 'https://github.com/<org>/terraform-eks.git'
+        git 'https://github.com/Ankitachaubey01/FullStack-Blogging-Application.git'
       }
     }
 
@@ -17,7 +17,7 @@ pipeline {
       steps {
         withVault(
           vaultSecrets: [[
-            path: 'aws/creds/eks-role',
+            path: 'aws/creds/eksvaultrole',
             secretValues: [
               [envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key'],
               [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_key'],
