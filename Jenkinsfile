@@ -9,7 +9,11 @@ pipeline {
 
     stage('Checkout') {
       steps {
-        git 'https://github.com/Ankitachaubey01/FullStack-Blogging-Application.git'
+        git(
+                    url: 'https://github.com/Ankitachaubey01/FullStack-Blogging-Application.git',
+                    branch: 'main',
+                    credentialsId: 'github-token'
+                )
       }
     }
 
