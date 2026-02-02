@@ -72,11 +72,6 @@ variable "ssh_key_name" {
 
 #SSH Key Pair variable
 
-variable "ssh_key_name" {
-  description = "The name of the SSH key pair to use for instances"
-  type        = string
-  default     = "hsms-stg-common"
-}
 
 #S3 Bucket for Terraform State
 
