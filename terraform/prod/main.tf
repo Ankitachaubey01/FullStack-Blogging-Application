@@ -1,5 +1,5 @@
 module "EKS_Cluster" {
-  source = "../module"
+  source = "../modules"
   
   region                = var.region
   environment           = var.environment
