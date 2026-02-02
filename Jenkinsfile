@@ -2,6 +2,7 @@ pipeline {
   agent any
 
   environment {
+    PATH = "/usr/local/bin:${env.PATH}"
     VAULT_ADDR = credentials('vault_addr')
     VAULT_SKIP_VERIFY = "true"
     AWS_REGION = "us-west-2"
