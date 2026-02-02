@@ -39,21 +39,21 @@ pipeline {
     }
 
     stage('Terraform Init') {
-      steps {
+      steps {dir('terraform/prod'){
         sh 'terraform init'
-      }
+      }}
     }
 
     stage('Terraform Plan') {
-      steps {
+      steps {dir('terraform/prod'){
         sh 'terraform plan'
-      }
+      }}
     }
 
     stage('Terraform Apply') {
-      steps {
+      steps {dir('terraform/prod'){
         sh 'terraform apply -auto-approve'
-      }
+      }}
     }
   }
 }
