@@ -1,5 +1,5 @@
 module "EKS_Cluster" {
-  source = "terraform/modules"
+  source = "../module"
   
   region                = var.region
   environment           = var.environment
