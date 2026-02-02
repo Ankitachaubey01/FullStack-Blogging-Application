@@ -1,37 +1,41 @@
 pipeline {
   agent any
 
-  parameters {
-    choice(name: 'ENV', choices: ['dev', 'qa', 'prod'])
+  environment {
+    VAULT_ADDR = credentials('vault_addr')
+    VAULT_SKIP_VERIFY = "true"
+    AWS_REGION = "us-west-2"
   }
 
   stages {
 
     stage('Checkout') {
       steps {
-        git(
-                    url: 'https://github.com/Ankitachaubey01/FullStack-Blogging-Application.git',
-                    branch: 'main',
-                    credentialsId: 'github-token'
-                )
+        checkout scm
       }
     }
 
-    stage('Fetch AWS creds from Vault') {
+    stage('Authenticate to Vault') {
       steps {
-          withVault([vaultSecrets: [[
-              path: 'aws/creds/eksvaultrole',
-              secretValues: [
-                  [envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key'],
-                  [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_key'],
-                  [envVar: 'AWS_SESSION_TOKEN', vaultKey: 'security_token']
-              ]
-          ]]]) {
-              sh 'aws sts get-caller-identity'
-          }
+        sh '''
+        vault login -method=aws role=jenkins
+        '''
       }
-}
+    }
 
+    stage('Get AWS Credentials') {
+      steps {
+        sh '''
+        CREDS=$(vault read -format=json aws/creds/eksvaultrole)
+
+        export AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r .data.access_key)
+        export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r .data.secret_key)
+        export AWS_SESSION_TOKEN=$(echo $CREDS | jq -r .data.security_token)
+
+        echo "AWS creds fetched from Vault"
+        '''
+      }
+    }
 
     stage('Terraform Init') {
       steps {
@@ -41,20 +45,13 @@ pipeline {
 
     stage('Terraform Plan') {
       steps {
-        sh 'terraform plan -var-file=envs/${ENV}/terraform.tfvars'
-      }
-    }
-
-    stage('Approval') {
-      when { expression { params.ENV == 'prod' } }
-      steps {
-        input message: "Approve Terraform Apply for ${ENV}?"
+        sh 'terraform plan'
       }
     }
 
     stage('Terraform Apply') {
       steps {
-        sh 'terraform apply -auto-approve -var-file=envs/${ENV}/terraform.tfvars'
+        sh 'terraform apply -auto-approve'
       }
     }
   }
