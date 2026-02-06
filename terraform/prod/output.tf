@@ -1,12 +1,15 @@
 output "cluster_id" {
-  value = aws_eks_cluster.eks.id
+  value = module.EKS_Cluster.cluster_id
 }
+
 output "node_group_id" {
-  value = aws_eks_node_group.eks.id
+  value = module.EKS_Cluster.node_group_id
 }
+
 output "vpc_id" {
-  value = aws_vpc.eks_vpc.id
+  value = module.EKS_Cluster.vpc_id
 }
+
 output "subnet_ids" {
-  value = aws_subnet.eks_subnet[*].id
+  value = module.EKS_Cluster.subnet_ids
 }
