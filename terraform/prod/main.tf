@@ -13,6 +13,6 @@ module "EKS_Cluster" {
   desired_size          = var.desired_size
   min_size              = var.min_size
   max_size              = var.max_size
-  tf_state_bucket       = var.tf_state_bucket
+  
   
 }
