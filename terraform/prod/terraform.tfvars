@@ -24,6 +24,6 @@
   max_size        = 4
   ssh_key_name    = "ekskey"
   # -------- Backend --------
-  tf_state_bucket = "my-ankita-state-bucket"
+  #tf_state_bucket = "my-ankita-state-bucket"
   
 
