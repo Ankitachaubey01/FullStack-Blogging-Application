@@ -37,4 +37,4 @@ variable "max_size" {
 variable "ssh_key_name" {}
 
 variable "tf_state_bucket" {}
-variable "tf_lock_table" {}
+
