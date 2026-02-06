@@ -7,7 +7,7 @@ module "EKS_Cluster" {
   vpc_cidr              = var.vpc_cidr
   availability_zones    = var.availability_zones
   eks_cluster_name      = var.eks_cluster_name
-  ssh_key_name = "ekskey"
+  ssh_key_name          = var.ssh_key_name
   node_group_name       = var.node_group_name
   instance_types        = var.instance_types
   desired_size          = var.desired_size
