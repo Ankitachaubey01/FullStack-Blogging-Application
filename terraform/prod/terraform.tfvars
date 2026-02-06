@@ -14,7 +14,7 @@
 
   # -------- EKS --------
   eks_cluster_name = "prod-eks-cluster"
-  eks_version      = "1.28"
+  eks_version      = "1.32"
 
   # -------- Node Group --------
   node_group_name = "prod-node-group"
