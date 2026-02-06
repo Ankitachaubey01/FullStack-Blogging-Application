@@ -167,8 +167,8 @@ resource "aws_iam_role_policy_attachment" "eks_node_group_registry_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
-resource "aws_s3_bucket" "tf_state" {
-  bucket = var.tf_state_bucket
-}
+#resource "aws_s3_bucket" "tf_state" {
+#  bucket = var.tf_state_bucket
+#}
 
 
