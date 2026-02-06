@@ -27,6 +27,7 @@ pipeline {
     stage('Get AWS Credentials') {
       steps {
         sh '''
+        set +x
         CREDS=$(vault read -format=json aws/creds/eksvaultrole)
 
         export AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r .data.access_key)
@@ -36,6 +37,8 @@ pipeline {
         echo "AWS creds fetched from Vault"
         '''
       }
+          
+
     }
 
     stage('Terraform Init') {
