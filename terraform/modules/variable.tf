@@ -75,7 +75,7 @@ variable "ssh_key_name" {
 
 #S3 Bucket for Terraform State
 
-variable "tf_state_bucket" {
-  type = string
-}
+#variable "tf_state_bucket" {
+#  type = string
+#}
 
