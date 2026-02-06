@@ -24,6 +24,6 @@
   max_size        = 4
   ssh_key_name    = "prod-ssh-key"
   # -------- Backend --------
-  tf_state_bucket = "mynew-state-bucket"
-  tf_lock_table  = "my-Ankita-lock-table"
+  tf_state_bucket = "my-ankita-state-bucket"
+  
 
