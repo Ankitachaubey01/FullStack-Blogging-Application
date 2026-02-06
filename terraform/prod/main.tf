@@ -2,6 +2,7 @@ module "EKS_Cluster" {
   source = "../modules"
   
   region                = var.region
+  eks_version           = var.eks_version
   environment           = var.environment
   vpc_name              = var.vpc_name
   vpc_cidr              = var.vpc_cidr
