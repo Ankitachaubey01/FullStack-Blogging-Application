@@ -42,7 +42,6 @@ variable "eks_cluster_name" {
 
 variable "eks_version" {
   type    = string
-  default = "1.31"
 }
 
 variable "node_group_name" {
