@@ -153,13 +153,7 @@ pipeline {
                 </html>
                 """
 
-                emailext(
-                    subject: "${jobName} - Build ${buildNumber} - ${pipelineStatus.toUpperCase()}",
-                    body: body,
-                    to: 'ankitachaubey098@gmail.com',
-                    mimeType: 'text/html',
-                    attachmentsPattern: 'trivy-image-report.html'
-                )
+                
             }
         }
     }
