@@ -111,7 +111,7 @@ pipeline {
                     clusterName: 'prod-eks-cluster',
                     serverUrl: 'https://3BB24AA471B2EFD046041FA23A31BF19.yl4.us-west-2.eks.amazonaws.com'
                 ) {
-                    sh "kubectl apply -f deployment-service.yaml"
+                    sh "kubectl apply -f deployment-service.yml"
                 }
             }
         }
