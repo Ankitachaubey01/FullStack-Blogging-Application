@@ -93,7 +93,7 @@ pipeline {
         
         stage('Verify the Deployment') {
             steps {
-                withKubeConfig(caCertificate: '', clusterName: 'abrahimcse-cluster', contextName: '', credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://< >.ap-southes-1.eks.amazonaws.com') {
+                withKubeConfig(caCertificate: '', clusterName: 'abrahimcse-cluster', contextName: '', credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://3BB24AA471B2EFD046041FA23A31BF19.yl4.us-west-2.eks.amazonaws.com') {
                         sh "kubectl get pods -n webapps"
                         sh "kubectl get svc -n webapps"
                 }
