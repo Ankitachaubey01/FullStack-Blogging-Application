@@ -1,62 +1,137 @@
 pipeline {
-  agent any
-
-  environment {
-    PATH = "/usr/local/bin:${env.PATH}"
-    VAULT_ADDR = credentials('vault_addr')
-    VAULT_SKIP_VERIFY = "true"
-    AWS_REGION = "us-west-2"
-  }
-
-  stages {
-
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
+    agent any
+    
+    tools {
+        jdk 'jdk17'
+        maven 'maven3'
+    }
+    
+    environment {
+        SCANNER_HOME = tool 'sonar-scanner'
     }
 
-    stage('Authenticate to Vault') {
-      steps {
-        sh '''
-        vault login -method=aws role=jenkins
-        '''
-      }
-    }
+    stages {
+        stage('Git Checkout') {
+            steps {
+               git branch: 'main', credentialsId: 'git-cred', url: 'https://github.com/Ankitachaubey01/FullStack-Blogging-Application.git'
+            }
+        }
+        stage('Compile') {
+            steps {
+                sh "mvn compile"
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                sh "mvn test"
+            }
+        }
+        
+        stage('File System Scan') {
+            steps {
+                sh "trivy fs --format table -o trivy-fs-report.html ."
+            }
+        }
+        stage('SonarQube Analsyis') {
+            steps {
+                withSonarQubeEnv('sonar') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=bloggingapp -Dsonar.projectKey=bloggingapp \
+                            -Dsonar.java.binaries=. '''
+                }
+            }
+        }
+        stage('Quality Gate') {
+            steps {
+                script {
+                  waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token' 
+                }
+            }
+        }
+        stage('Build') {
+            steps {
+                sh "mvn package"
+            }
+        }
+        stage('Publish To Nexus') {
+            steps {
+            withMaven(globalMavenSettingsConfig: 'global-settings', jdk: 'jdk17', maven: 'maven3', mavenSettingsConfig: '', traceability: true) {
+                    sh "mvn deploy"
+                }
+            }
+        }
+        stage('Build & Tag Docker Image') {
+            steps {
+               script {
+                   withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                            sh "docker build -t ankitachaubey99/bloggingapp:latest ."
+                    }
+               }
+            }
+        }
+        stage('Docker Image Scan') {
+            steps {
+                sh "trivy image --format table -o trivy-image-report.html ankitachaubey99/bloggingapp:latest "
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+               script {
+                   withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                            sh "docker push ankitachaubey99/bloggingapp:latest"
+                    }
+               }
+            }
+        }
+        stage('Deploy To Kubernetes') {
+            steps {
+                withKubeConfig(caCertificate: '', clusterName: 'prod-eks-cluster', contextName: '', credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://< >.us-west-2.eks.amazonaws.com') {
+                      sh "kubectl apply -f deployment-service.yaml"
+                }
+            }
+        }
+        
+        stage('Verify the Deployment') {
+            steps {
+                withKubeConfig(caCertificate: '', clusterName: 'abrahimcse-cluster', contextName: '', credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://< >.ap-southes-1.eks.amazonaws.com') {
+                        sh "kubectl get pods -n webapps"
+                        sh "kubectl get svc -n webapps"
+                }
+            }
+        }
 
-    stage('Get AWS Credentials') {
-      steps {
-        sh '''
-        set +x
-        CREDS=$(vault read -format=json aws/creds/eksvaultrole)
+    post {
+    always {
+        script {
+            def jobName = env.JOB_NAME
+            def buildNumber = env.BUILD_NUMBER
+            def pipelineStatus = currentBuild.result ?: 'UNKNOWN'
+            def bannerColor = pipelineStatus.toUpperCase() == 'SUCCESS' ? 'green' : 'red'
 
-        export AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r .data.access_key)
-        export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r .data.secret_key)
-        export AWS_SESSION_TOKEN=$(echo $CREDS | jq -r .data.security_token)
+            def body = """
+                <html>
+                <body>
+                <div style="border: 4px solid ${bannerColor}; padding: 10px;">
+                <h2>${jobName} - Build ${buildNumber}</h2>
+                <div style="background-color: ${bannerColor}; padding: 10px;">
+                <h3 style="color: white;">Pipeline Status: ${pipelineStatus.toUpperCase()}</h3>
+                </div>
+                <p>Check the <a href="${BUILD_URL}">console output</a>.</p>
+                </div>
+                </body>
+                </html>
+            """
 
-        echo "AWS creds fetched from Vault"
-        '''
-      }
-          
-
-    }
-
-    stage('Terraform Init') {
-      steps {dir('terraform/prod'){
-        sh 'terraform init'
-      }}
-    }
-
-    stage('Terraform Plan') {
-      steps {dir('terraform/prod'){
-        sh 'terraform plan'
-      }}
-    }
-
-    stage('Terraform Apply') {
-      steps {dir('terraform/prod'){
-        sh 'terraform apply -auto-approve'
-      }}
-    }
-  }
+            emailext (
+                subject: "${jobName} - Build ${buildNumber} - ${pipelineStatus.toUpperCase()}",
+                body: body,
+                to: 'ankitachaubey098@gmail.com',
+                from: 'jenkins@example.com',
+                replyTo: 'jenkins@example.com',
+                mimeType: 'text/html',
+                attachmentsPattern: 'trivy-image-report.html'
+            )
+        }
+      }       
+    }   
 }
